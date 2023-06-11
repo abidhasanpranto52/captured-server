@@ -3,7 +3,7 @@ const app = express();
 const cors = require("cors");
 require("dotenv").config();
 const port = process.env.PORT || 5000;
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 
 
 //middleware
@@ -31,6 +31,8 @@ async function run() {
 
 
     const courseCollection = client.db("capturedDb").collection("course");
+    const instructorCollection = client.db("capturedDb").collection("instructor");
+    const cartsCollection = client.db("capturedDb").collection("cart");
 
 
 
@@ -38,8 +40,43 @@ async function run() {
         const result = await courseCollection.find().toArray();
         res.send(result)
     })
+    app.get('/instructor', async (req,res) => {
+        const result = await instructorCollection.find().toArray();
+        res.send(result)
+    })
 
+    app.get("/instructorInfo/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const options = {
+        projection: {
+          instructor: 1,
+          email: 1,
+          instructor_id: 1,
+          instructorImg: 1,
+          classTaken: 1,
+          postedBy: 1,
+          classes: 1,
+        },
+      };
+      const result = await instructorCollection.findOne(query, options);
+      res.send(result);
+    });
 
+    
+//student selected class
+    app.post("/carts", async (req, res) => {
+      const item = req.body;
+      // console.log(item);
+      const result = await cartsCollection.insertOne(item);
+      res.send(result);
+    });
+    app.get("/carts", async (req, res) => {
+      const item = req.body;
+      // console.log(item);
+      const result = await cartsCollection.find(item).toArray();
+      res.send(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
