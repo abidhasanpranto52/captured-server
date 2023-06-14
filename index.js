@@ -173,7 +173,7 @@ async function run() {
           description: updateCourse.description,
         },
       };
-      const result = await toysCollection.updateOne(filter, updateDoc);
+      const result = await courseCollection.updateOne(filter, updateDoc);
       res.send(result);
     });
 
@@ -187,7 +187,7 @@ async function run() {
     //instructor related apis
     app.get("/instructors", async (req, res) => {
       const query = { role: "instructor" };
-      const result = await usersCollection.find(query).limit(6).toArray();
+      const result = await usersCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -258,6 +258,7 @@ async function run() {
       res.send(result);
     });
 
+
     app.delete("/carts/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
@@ -265,7 +266,9 @@ async function run() {
       res.send(result);
     });
 
-    app.post('create-payment-intent', async(req,res) => {
+
+    //Payment
+    app.post('create-payment-intent', verifyJWT, async(req,res) => {
       const {price} = req.body;
       const amount = parseInt(price*100);
       const paymentIntent = await stripe.paymentIntents.create({
